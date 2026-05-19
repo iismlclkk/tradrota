@@ -24,7 +24,7 @@ export default function Home() {
         videoRef.current.srcObject = stream;
       }
     } catch (err) {
-      alert("Kamera başlatılamadı, lütfen izinleri kontrol edin.");
+      alert("Kamera bağlantısı başarısız.");
     }
   };
 
@@ -37,18 +37,14 @@ export default function Home() {
         tracks.forEach(track => track.stop());
         videoRef.current.srcObject = null;
       }
-      
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onloadend = () => { setImagePreview(reader.result); };
       reader.readAsDataURL(file);
     }
   };
 
   const handleAnalyze = async () => {
     let base64Image = null;
-
     if (imagePreview) {
       base64Image = imagePreview;
     } else if (videoRef.current && videoRef.current.srcObject) {
@@ -60,7 +56,7 @@ export default function Home() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       base64Image = canvas.toDataURL('image/jpeg');
     } else {
-      alert("Lütfen önce kamerayı açın veya bir fotoğraf yükleyin!");
+      alert("Sistem sinyali yok: Kamera veya fotoğraf eksik.");
       return;
     }
 
@@ -74,158 +70,219 @@ export default function Home() {
       const data = await res.json();
       setResult(data);
     } catch (err) {
-      console.error(err);
-      alert("Analiz sırasında bir hata oluştu.");
+      alert("Veri işleme hatası.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div style={{ backgroundColor: '#0f111a', color: '#fff', minHeight: '100vh', fontFamily: 'sans-serif', paddingBottom: '50px' }}>
+    <div style={{ backgroundColor: '#060913', color: '#00ffcc', minHeight: '100vh', fontFamily: '"Courier New", Courier, monospace', padding: '15px' }}>
       
-      {/* Üst NASA Tarzı Kontrol Barı */}
-      <header style={{ backgroundColor: '#161925', borderBottom: '2px solid #23293a', padding: '15px 20px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', maxWidth: '1200px', margin: '0 auto' }}>
-          <h1 style={{ fontSize: '1.2rem', margin: 0, fontWeight: 'bold', color: '#3b82f6', letterSpacing: '1px' }}>AURA AI // GEOLOGICAL CORD SYSTEM</h1>
-          
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div>
-              <label style={{ fontSize: '0.85rem', color: '#94a3b8', marginRight: '8px' }}>HEDEF ZORLUK (UIAA):</label>
-              <select value={selectedGrade} onChange={(e) => setSelectedGrade(e.target.value)} style={{ backgroundColor: '#0f111a', color: '#fff', border: '1px solid #3b82f6', padding: '6px 12px', borderRadius: '4px', fontWeight: 'bold' }}>
-                <option value="5">5</option>
-                <option value="6-">6-</option>
-                <option value="6">6</option>
-                <option value="6+">6+</option>
-                <option value="7-">7-</option>
-                <option value="7">7</option>
-                <option value="7+">7+</option>
-                <option value="8-">8-</option>
-              </select>
-            </div>
+      {/* Üst Fütüristik Header */}
+      <header style={{ border: '1px solid #1f3a60', backgroundColor: '#0b132b', padding: '12px 20px', borderRadius: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px', marginBottom: '15px', boxShadow: '0 0 15px rgba(0,255,204,0.1)' }}>
+        <div>
+          <div style={{ fontSize: '1.3rem', fontWeight: 'bold', letterSpacing: '2px', color: '#00ffcc' }}>
+            ⚡ AURA_AI // TOPO_ENGINE_V3
+          </div>
+          <div style={{ fontSize: '0.65rem', color: '#5f85b6', marginTop: '3px' }}>SYS_STATUS: ACTIVE // LOC_SYS: GLOBAL_COORDINATES</div>
+        </div>
+        
+        {/* Seçim Alanları */}
+        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+          <div style={{ border: '1px solid #1f3a60', padding: '5px 10px', backgroundColor: '#070c1a', borderRadius: '3px' }}>
+            <label style={{ fontSize: '0.75rem', color: '#5f85b6', marginRight: '6px' }}>TARGET_GRADE:</label>
+            <select value={selectedGrade} onChange={(e) => setSelectedGrade(e.target.value)} style={{ backgroundColor: 'transparent', color: '#00ffcc', border: 'none', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}>
+              {['5', '6-', '6', '6+', '7-', '7', '7+', '8-'].map(g => <option key={g} value={g} style={{backgroundColor: '#070c1a'}}>{g}</option>)}
+            </select>
+          </div>
 
-            <div>
-              <label style={{ fontSize: '0.85rem', color: '#94a3b8', marginRight: '8px' }}>KİLİT ETAP SAYISI:</label>
-              <select value={cruxCount} onChange={(e) => setCruxCount(Number(e.target.value))} style={{ backgroundColor: '#0f111a', color: '#fff', border: '1px solid #ef4444', padding: '6px 12px', borderRadius: '4px', fontWeight: 'bold' }}>
-                <option value={1}>1 Kilit</option>
-                <option value={2}>2 Kilit</option>
-                <option value={3}>3 Kilit</option>
-              </select>
-            </div>
+          <div style={{ border: '1px solid #1f3a60', padding: '5px 10px', backgroundColor: '#070c1a', borderRadius: '3px' }}>
+            <label style={{ fontSize: '0.75rem', color: '#5f85b6', marginRight: '6px' }}>CRUX_COUNT:</label>
+            <select value={cruxCount} onChange={(e) => setCruxCount(Number(e.target.value))} style={{ backgroundColor: 'transparent', color: '#ff3366', border: 'none', fontWeight: 'bold', outline: 'none', cursor: 'pointer' }}>
+              <option value={1} style={{backgroundColor: '#070c1a'}}>1 CRUX</option>
+              <option value={2} style={{backgroundColor: '#070c1a'}}>2 CRUX</option>
+              <option value={3} style={{backgroundColor: '#070c1a'}}>3 CRUX</option>
+            </select>
           </div>
         </div>
       </header>
 
-      {/* Ekran Görsel Alanı */}
-      <main style={{ position: 'relative', width: '100%', maxWidth: '850px', margin: '25px auto', aspectRatio: '4/3', backgroundColor: '#070a12', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.7)', border: '1px solid #23293a' }}>
+      {/* Ana Gövde: Sol Grafik - Sağ Metrik Panel Düzeni */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr minmax(300px, 350px)', gap: '15px', maxWidth: '1400px', margin: '0 auto', alignItems: 'start' }}>
         
-        {!imagePreview && (
-          <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-        )}
+        {/* SOL: Grafik ve Matris Ekranı */}
+        <div style={{ position: 'relative', border: '1px solid #1f3a60', backgroundColor: '#03050a', borderRadius: '4px', overflow: 'hidden', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.9)' }}>
+          
+          {/* HUD İskelesi Köşe Çizgileri */}
+          <div style={{ position: 'absolute', top: 5, left: 5, width: 10, height: 10, borderTop: '2px solid #00ffcc', borderLeft: '2px solid #00ffcc' }} />
+          <div style={{ position: 'absolute', top: 5, right: 5, width: 10, height: 10, borderTop: '2px solid #00ffcc', borderRight: '2px solid #00ffcc' }} />
+          <div style={{ position: 'absolute', bottom: 5, left: 5, width: 10, height: 10, borderBottom: '2px solid #00ffcc', borderLeft: '2px solid #00ffcc' }} />
+          <div style={{ position: 'absolute', bottom: 5, right: 5, width: 10, height: 10, borderBottom: '2px solid #00ffcc', borderRight: '2px solid #00ffcc' }} />
 
-        {imagePreview && (
-          <img src={imagePreview} alt="Kaya Yüzeyi" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-        )}
-
-        {/* SVG Çizim Katmanı */}
-        {result && (
-          <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 100 100" preserveAspectRatio="none">
+          <div style={{ aspectRatio: '4/3', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {!imagePreview && !videoRef.current?.srcObject && (
+              <div style={{ color: '#1f3a60', fontSize: '0.9rem', textAlign: 'center', zIndex: 1 }}>
+                [ SYSTEM IDLE // FEED NOT DETECTED ]<br/>
+                <span style={{ fontSize: '0.7rem', color: '#395377' }}>Lütfen Alttan Kamera veya Dosya Girişi Sağlayın</span>
+              </div>
+            )}
             
-            {/* ANA ROTA */}
-            {result.route1 && (
-              <polyline points={result.route1.map(pt => `${pt.x},${pt.y}`).join(' ')} fill="none" stroke="#3b82f6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+            {!imagePreview && (
+              <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: videoRef.current?.srcObject ? 'block' : 'none' }} />
             )}
 
-            {/* VARYANT ROTA 2 */}
-            {showRoute2 && result.route2 && (
-              <polyline points={result.route2.map(pt => `${pt.x},${pt.y}`).join(' ')} fill="none" stroke="#eab308" strokeWidth="1.5" strokeDasharray="3,2" strokeLinecap="round" strokeLinejoin="round" />
+            {imagePreview && (
+              <img src={imagePreview} alt="Kaya Analizi" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             )}
-
-            {/* BOLTLAR */}
-            {showBolts && result.bolts && result.bolts.map((bolt, idx) => (
-              <g key={`bolt-${idx}`}>
-                <rect x={bolt.x - 1.5} y={bolt.y - 1.5} width="3" height="3" fill="#10b981" rx="0.5" />
-                <text x={bolt.x + 2} y={bolt.y + 1} fill="#10b981" fontSize="2.5" fontWeight="bold">B{idx + 1}</text>
-              </g>
-            ))}
-
-            {/* ÇOKLU KİLİT NOKTALARI */}
-            {result.cruxs && result.cruxs.slice(0, cruxCount).map((crux, idx) => (
-              <g key={`crux-${idx}`}>
-                <circle cx={crux.x} cy={crux.y} r="3.5" fill="none" stroke="#ef4444" strokeWidth="0.8" />
-                <circle cx={crux.x} cy={crux.y} r="1" fill="#ef4444" />
-                <text x={crux.x + 4.5} y={crux.y + 1} fill="#ef4444" fontSize="2.8" fontWeight="bold">KİLİT {idx + 1}</text>
-              </g>
-            ))}
-          </svg>
-        )}
-
-        {loading && (
-          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(7,10,18,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: '15px' }}>
-            <div style={{ width: '45px', height: '45px', border: '4px solid #161925', borderTopColor: '#3b82f6', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
-            <p style={{ margin: 0, fontSize: '0.95rem', color: '#94a3b8' }}>Topoğrafya, Yüzey Yapısı ve Bolt Emniyet Derecesi Analiz Ediliyor...</p>
           </div>
-        )}
-      </main>
 
-      {/* Görünüm Seçenekleri */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '25px', margin: '15px auto', maxWidth: '850px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
-          <input type="checkbox" checked={showRoute2} onChange={(e) => setShowRoute2(e.target.checked)} />
-          <span style={{ color: '#eab308', fontWeight: 'bold' }}>Alternatif Varyant Rota</span>
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem' }}>
-          <input type="checkbox" checked={showBolts} onChange={(e) => setShowBolts(e.target.checked)} />
-          <span style={{ color: '#10b981', fontWeight: 'bold' }}>Bolt Yerleşim Planı</span>
-        </label>
+          {/* SVG Katmanı */}
+          {result && (
+            <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }} viewBox="0 0 100 100" preserveAspectRatio="none">
+              
+              {/* TELEMETRİ METRE CETVELİ */}
+              <g opacity="0.6">
+                <line x1="5" y1="10" x2="5" y2="90" stroke="#00ffcc" strokeWidth="0.3" strokeDasharray="1,1" />
+                {[0, 5, 10, 15, 20, 25].map((m) => {
+                  const yPos = 90 - ((m / 25) * 80);
+                  return (
+                    <g key={`m-${m}`}>
+                      <line x1="3" y1={yPos} x2="5" y2={yPos} stroke="#00ffcc" strokeWidth="0.4" />
+                      <text x="7" y={yPos + 0.8} fill="#00ffcc" fontSize="2" fontWeight="bold">{m}M</text>
+                    </g>
+                  );
+                })}
+              </g>
+
+              {/* TACTICAL ROUTE 1 (Neon Mavi Glow Efektli) */}
+              {result.route1 && (
+                <polyline points={result.route1.map(pt => `${pt.x},${pt.y}`).join(' ')} fill="none" stroke="#00b3ff" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" filter="drop-shadow(0px 0px 3px #00b3ff)" />
+              )}
+
+              {/* TACTICAL ROUTE 2 (Varyant Neon Sarı Kesikli) */}
+              {showRoute2 && result.route2 && (
+                <polyline points={result.route2.map(pt => `${pt.x},${pt.y}`).join(' ')} fill="none" stroke="#ffcc00" strokeWidth="0.9" strokeDasharray="2,1.5" strokeLinecap="round" strokeLinejoin="round" />
+              )}
+
+              {/* ANCHOR PLATES (Bolt Noktaları - Neon Yeşil) */}
+              {showBolts && result.bolts && result.bolts.map((bolt, idx) => (
+                <g key={`b-${idx}`}>
+                  <rect x={bolt.x - 1.2} y={bolt.y - 1.2} width="2.4" height="2.4" fill="none" stroke="#00ffcc" strokeWidth="0.4" />
+                  <circle cx={bolt.x} cy={bolt.y} r="0.4" fill="#00ffcc" />
+                  <text x={bolt.x + 2} y={bolt.y + 0.8} fill="#00ffcc" fontSize="2" fontWeight="bold">B{idx + 1}</text>
+                </g>
+              ))}
+
+              {/* CRUX RADARS (Neon Pembe/Kırmızı Dalgalar) */}
+              {result.cruxs && result.cruxs.slice(0, cruxCount).map((crux, idx) => (
+                <g key={`c-${idx}`}>
+                  <circle cx={crux.x} cy={crux.y} r="3" fill="none" stroke="#ff3366" strokeWidth="0.5" strokeDasharray="1,1" />
+                  <circle cx={crux.x} cy={crux.y} r="0.8" fill="#ff3366" />
+                  <text x={crux.x + 4} y={crux.y + 0.8} fill="#ff3366" fontSize="2.2" fontWeight="bold">CRUX_{idx + 1}</text>
+                </g>
+              ))}
+            </svg>
+          )}
+
+          {/* Tarama Animasyon Maskesi */}
+          {loading && (
+            <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(3,5,10,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+              <div style={{ width: '90%', height: '1px', backgroundColor: '#00ffcc', boxShadow: '0 0 10px #00ffcc', position: 'absolute', top: 0, animation: 'scan 2s linear infinite' }} />
+              <div style={{ fontSize: '0.85rem', letterSpacing: '1px', color: '#00ffcc', marginBottom: '5px' }}>&gt;&gt; RUNNING_GEO_ANALYSIS...</div>
+              <div style={{ fontSize: '0.65rem', color: '#5f85b6' }}>Hassas Yapay Zeka Matrisi İle Topoğrafya Taranıyor</div>
+            </div>
+          )}
+        </div>
+
+        {/* SAĞ PANEL: Canlı Telemetri ve Mühendislik Kartı */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', height: '100%' }}>
+          
+          {/* Katman İzolasyon Anahtarları */}
+          <div style={{ border: '1px solid #1f3a60', backgroundColor: '#0b132b', padding: '15px', borderRadius: '4px' }}>
+            <div style={{ fontSize: '0.75rem', color: '#5f85b6', marginBottom: '10px', borderBottom: '1px solid #1f3a60', paddingBottom: '4px', fontWeight: 'bold' }}>LAYER_CONTROLS</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.75rem', cursor: 'pointer', color: '#ffcc00' }}>
+                <input type="checkbox" checked={showRoute2} onChange={(e) => setShowRoute2(e.target.checked)} style={{ accentColor: '#ffcc00' }} />
+                <span>[ ] SHOW ALTERNATIVE ROUTE</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.75rem', cursor: 'pointer', color: '#00ffcc' }}>
+                <input type="checkbox" checked={showBolts} onChange={(e) => setShowBolts(e.target.checked)} style={{ accentColor: '#00ffcc' }} />
+                <span>[ ] RENDER BOLT STATIONS</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Dinamik Mühendislik Verileri (Sadece Sonuç Varsa Parlar) */}
+          <div style={{ border: '1px solid #1f3a60', backgroundColor: '#070c1a', padding: '20px', borderRadius: '4px', flexGrow: 1, display: 'flex', flexDirection: 'column', gap: '15px' }}>
+            <div style={{ fontSize: '0.8rem', color: '#00ffcc', letterSpacing: '1px', borderBottom: '1px solid #1f3a60', paddingBottom: '6px', fontWeight: 'bold' }}>
+              &gt; REAL_TIME_DATA_LOG
+            </div>
+
+            {result ? (
+              <>
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: '#5f85b6' }}>GEOLOGICAL_FORMATION</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#fff', marginTop: '3px' }}>{result.details?.rockType}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: '#5f85b6' }}>ROPE_SCALE_LENGTH</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 'bold', color: '#00b3ff', marginTop: '3px' }}>{result.details?.totalLength}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.65rem', color: '#5f85b6' }}>BOLT_DENSITY_MATRIX</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 'bold', color: '#ffcc00', marginTop: '3px' }}>{result.details?.boltingDensity} ({result.details?.avgBoltDistance})</div>
+                </div>
+                <div style={{ borderTop: '1px dashed #1f3a60', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#ff3366', fontWeight: 'bold' }}>⚠️ CRITICAL SAFETY ALERT (GROUND FALL)</div>
+                  <div style={{ fontSize: '0.7rem', color: '#cbd5e1', lineHeight: '1.4', marginTop: '4px' }}>{result.details?.safetyZone}</div>
+                </div>
+                <div style={{ borderTop: '1px dashed #1f3a60', paddingTop: '10px' }}>
+                  <div style={{ fontSize: '0.65rem', color: '#00ffcc', fontWeight: 'bold' }}>🧗 CLIP_COMFORT_INDEX</div>
+                  <div style={{ fontSize: '0.7rem', color: '#cbd5e1', lineHeight: '1.4', marginTop: '4px' }}>{result.details?.clipComfort}</div>
+                </div>
+                <div style={{ borderTop: '1px solid #1f3a60', paddingTop: '10px', flexGrow: 1 }}>
+                  <div style={{ fontSize: '0.65rem', color: '#5f85b6' }}>STRATEGIC_SURFACE_SUMMARY</div>
+                  <div style={{ fontSize: '0.75rem', color: '#a2b7d4', lineHeight: '1.5', marginTop: '5px', fontStyle: 'italic' }}>{result.details?.strategy}</div>
+                </div>
+              </>
+            ) : (
+              <div style={{ color: '#27436b', fontSize: '0.75rem', margin: 'auto 0', textAlign: 'center' }}>
+                [ AWAITING ANALYSIS INJECT ]<br/>
+                Sinyal bekleniyor...
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Medya Butonları */}
-      <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', padding: '10px 20px', flexWrap: 'wrap' }}>
-        <button onClick={startCamera} style={{ backgroundColor: '#161925', border: '1px solid #475569', color: '#fff', padding: '12px 24px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>📷 Kamerayı Aç</button>
-        <button onClick={() => fileInputRef.current.click()} style={{ backgroundColor: '#161925', border: '1px solid #8b5cf6', color: '#a78bfa', padding: '12px 24px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer' }}>📁 Fotoğraf Yükle</button>
+      {/* Alt Konsol Butonları (Kokpit Tetikleyicileri) */}
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '20px', flexWrap: 'wrap', maxWidth: '1400px', margin: '20px auto 0 auto' }}>
+        <button onClick={startCamera} style={{ backgroundColor: '#0b132b', border: '1px solid #00ffcc', color: '#00ffcc', padding: '12px 24px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', letterSpacing: '1px' }}>
+          [ INIT_CAMERA ]
+        </button>
+        <button onClick={() => fileInputRef.current.click()} style={{ backgroundColor: '#0b132b', border: '1px solid #8b5cf6', color: '#a78bfa', padding: '12px 24px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', letterSpacing: '1px' }}>
+          [ INJECT_IMAGE_FILE ]
+        </button>
         <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
-        <button onClick={handleAnalyze} disabled={loading} style={{ backgroundColor: '#3b82f6', color: '#fff', border: 'none', padding: '12px 36px', borderRadius: '6px', fontWeight: 'bold', cursor: 'pointer', boxShadow: '0 4px 14px rgba(59,130,246,0.4)' }}>
-          {loading ? 'HESAPLANIYOR...' : '⚡ GEOLOJİK ANALİZ VE ROTA ÜRET'}
+        
+        <button onClick={handleAnalyze} disabled={loading} style={{ backgroundColor: '#00ffcc', border: 'none', color: '#060913', padding: '12px 40px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.85rem', letterSpacing: '1px', boxShadow: '0 0 15px rgba(0,255,204,0.4)' }}>
+          {loading ? 'COMPUTING...' : '⚡ EXECUTE_TOPOGRAPHY_SCAN'}
         </button>
       </div>
 
-      {/* YENİ ZENGİNLEŞTİRİLMİŞ TEKNİK RAPOR PANELİ */}
-      {result && (
-        <div style={{ maxWidth: '850px', margin: '30px auto 0 auto', padding: '0 15px' }}>
-          <div style={{ backgroundColor: '#161925', borderRadius: '8px', border: '1px solid #23293a', padding: '25px' }}>
-            <h2 style={{ fontSize: '1.1rem', margin: '0 0 20px 0', color: '#3b82f6', textTransform: 'uppercase', letterSpacing: '0.5px', borderBottom: '1px solid #23293a', paddingBottom: '10px' }}>
-              BÖLGE TOPOĞRAFYA VE KAYA ANALİZ RAPORU
-            </h2>
-            
-            {/* Grid Kartlar */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '20px' }}>
-              <div style={{ backgroundColor: '#0f111a', padding: '12px', borderRadius: '6px', border: '1px solid #23293a' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.8rem', block: 'block' }}>KAYA YAPISI / FORMASYON</span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '1rem', fontWeight: 'bold', color: '#cbd5e1' }}>{result.details?.rockType}</p>
-              </div>
-              <div style={{ backgroundColor: '#0f111a', padding: '12px', borderRadius: '6px', border: '1px solid #23293a' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.8rem', block: 'block' }}>ZORLUK DERECESİ (UIAA / FR)</span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '1rem', fontWeight: 'bold', color: '#10b981' }}>UIAA {result.details?.grade} ({result.details?.systemEquivalent})</p>
-              </div>
-              <div style={{ backgroundColor: '#0f111a', padding: '12px', borderRadius: '6px', border: '1px solid #23293a' }}>
-                <span style={{ color: '#94a3b8', fontSize: '0.8rem', block: 'block' }}>EMNİYET / BOLTLANMA DERECESİ</span>
-                <p style={{ margin: '5px 0 0 0', fontSize: '1rem', fontWeight: 'bold', color: '#eab308' }}>{result.details?.boltingDensity}</p>
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#0f111a', padding: '15px', borderRadius: '6px', border: '1px solid #23293a' }}>
-              <span style={{ color: '#94a3b8', fontSize: '0.8rem', display: 'block', marginBottom: '6px' }}>MİNİ REHBER / STRATEJİK DEĞERLENDİRME</span>
-              <p style={{ margin: 0, lineHeight: '1.5', color: '#e2e8f0', fontSize: '0.9rem' }}>{result.details?.strategy}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <canvas ref={canvasRef} style={{ display: 'none' }} />
-
+      {/* Küresel CSS Efektleri ve Animasyonlar */}
       <style jsx global>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes scan {
+          0% { top: 0%; opacity: 0; }
+          10% { opacity: 1; }
+          90% { opacity: 1; }
+          100% { top: 100%; opacity: 0; }
+        }
+        select option {
+          background-color: #070c1a !important;
+          color: #00ffcc !important;
+        }
       `}</style>
     </div>
   );
