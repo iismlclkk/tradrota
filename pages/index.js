@@ -301,12 +301,12 @@ export default function Home() {
           [ KAMERAYI AÇ ]
         </button>
         <button onClick={() => fileInputRef.current.click()} style={{ backgroundColor: '#0b132b', border: '1px solid #8b5cf6', color: '#a78bfa', padding: '12px 24px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.8rem', letterSpacing: '1px' }}>
-          [ GÖRSEL DOSYASI ENJEKTE ET ]
+          [ GÖRSEL EKLE ]
         </button>
         <input type="file" ref={fileInputRef} accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
         
         <button onClick={handleAnalyze} disabled={loading} style={{ backgroundColor: '#00ffcc', border: 'none', color: '#060913', padding: '12px 40px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer', fontFamily: 'inherit', fontSize: '0.85rem', letterSpacing: '1px', boxShadow: '0 0 15px rgba(0,255,204,0.4)' }}>
-          {loading ? 'HESAPLANIYOR...' : '⚡ GEOLOJİK TOPOĞRAFYA TARAMASINI ÇALIŞTIR'}
+          {loading ? 'HESAPLANIYOR...' : '⚡ JEOLOJİK TOPOĞRAFYA TARAMASI'}
         </button>
       </div>
 
