@@ -12,77 +12,90 @@ export default function handler(req, res) {
   }
 
   try {
-    const { image, grade } = req.body;
+    const { image, grade, calcMethod, manualHeight, refObjectLength } = req.body;
 
     if (!image) {
       return res.status(400).json({ message: 'Görsel işlenemedi.' });
     }
 
-    // Derecelere göre ölçeklenebilir dinamik metraj ve emniyet değerleri
-    let totalLength = '24 Metre';
-    let avgBoltDistance = '3.5 - 4 Metre Arası';
-    let rockType = 'Kireçtaşı (Masif Yüzey)';
-    let safetyZone = 'B1 (3m) ile B2 (6.5m) arası zemin çarpma riski barındırır. Emniyetçinin aktif/dinamik emniyet vermesi önerilir.';
-    let clipComfort = 'B3 ve B4 istasyonları, geniş ayak setlerinin hemen üzerinde konumlandırıldığı için klip konforu yüksek ve güvenlidir.';
-    let strategy = 'Yüzeyde belirgin yatay çatlak hatları tespit edildi. Spor tırmanış konforu için 5 adet bolt plaketi noktası simüle edilmiştir.';
+    // MATEMATİKSEL ÖLÇEKLENDİRME ALGORİTMASI (HAYATİ MATEMATİK MODÜLÜ)
+    // SVG ekran yüksekliği y=90 (zemin) ile y=10 (top) arasındadır. Yani toplam 80 birimlik piksel alanı vardır.
+    let targetTotalHeight = 25; // Varsayılan
 
-    if (grade.startsWith('7')) {
-      totalLength = '26 Metre';
-      avgBoltDistance = '4 - 4.5 Metre Arası';
-      rockType = 'Tektonik Kireçtaşı / Negatif Duvar';
-      safetyZone = 'B2 (7m) hizasında kilit hamleden hemen önce klip yapılmalıdır. Klip gecikirse negatif yapı sebebiyle düşüş salınımı (pendulum) büyüktür.';
-      clipComfort = 'B4 cıvatası sığ bir pocket üzerindeyken klip gerektirir. Dengeli ayak hassasiyeti ve hızlı klip yeteneği ister.';
-    } else if (grade.startsWith('8')) {
-      totalLength = '28 Metre';
-      avgBoltDistance = '5 Metre Arası (Uzun Sürteçli)';
-      rockType = 'Kompakt Basalt / Pürüzsüz Ayna';
-      safetyZone = 'B3 (13m) üstündeki dinamik hamlede (dyno) düşüş faktörü yüksektir. İp sürtünmesini azaltmak için uzun ekspres kullanılması şarttır.';
-      clipComfort = 'Kilit etaplardaki tüm boltlar kolların aşırı şişeceği (pump) negatif bölgelerde kalmaktadır, klip pozisyonları son derece agresiftir.';
+    if (calcMethod === 'manual') {
+      targetTotalHeight = manualHeight || 25;
+    } else {
+      // Referans nesne seçildiyse: Fotoğrafın altındaki bir insan boyunun (örn: 1.75m) 
+      // resimde yaklaşık 5.6 birim yer kapladığını varsayan dinamik çarpan simülasyonu
+      targetTotalHeight = Math.round((refObjectLength || 1.75) * 14.3);
     }
 
-    // Rota Noktaları (Görsel Koordinatlar)
-    const route1 = [
-      { x: 50, y: 88 },
-      { x: 48, y: 70 },
-      { x: 54, y: 52 },
-      { x: 47, y: 34 },
-      { x: 52, y: 12 }
-    ];
+    // Metraj çarpan katsayısı
+    const scaleFactor = targetTotalHeight / 80;
 
-    const route2 = [
-      { x: 50, y: 88 },
-      { x: 32, y: 72 },
-      { x: 38, y: 48 },
-      { x: 44, y: 30 },
-      { x: 52, y: 12 }
-    ];
+    // Yükseklik Çentiklerini Dağıtma (Cetvel için lineer bölme)
+    const scaleTicks = [];
+    const step = Math.ceil(targetTotalHeight / 5);
+    for (let m = 0; m <= targetTotalHeight; m += step) {
+      const yPos = 90 - (m / scaleFactor);
+      if (yPos >= 10) {
+        scaleTicks.push({ y: parseFloat(yPos.toFixed(1)), label: `${m}m` });
+      }
+    }
 
-    // Boltlar ve yerden yükseklikleri (h: metre cinsinden)
+    // Jeolojik Formasyon ve Temel jargona göre metin kalıpları
+    let rockType = 'Kireçtaşı (Masif Yüzey Sektörü)';
+    let safetyZone = `B1 ile B2 arası zemin çarpma riski barındırır. İp sürtünmesini engellemek adına emniyetçinin dinamik kalması hayati önem taşır.`;
+    let clipComfort = 'B3 ve B4 istasyonları, geniş ayak setlerinin hemen üzerinde konumlandırıldığı için klip konforu yüksek ve güvenlidir.';
+    let strategy = 'Yüzeyde belirgin yatay çatlak hatları tespit edildi. Spor tırmanış konforu için 5 adet emniyet noktası ölçeklenmiştir.';
+
+    if (grade.startsWith('7')) {
+      rockType = 'Tektonik Kireçtaşı / Negatif Duvar Yapısı';
+      safetyZone = `Kilit etaba girmeden hemen önce klip yapılmalıdır. İp sürtünmesi ve negatif düşüş salınımı büyüktür.`;
+      clipComfort = 'B4 istasyonu sığ bir pocket üzerindeyken klip gerektirir. Dengeli ayak hassasiyeti ister.';
+    } else if (grade.startsWith('8')) {
+      rockType = 'Kompakt Basalt / Pürüzsüz Ayna Yüzey';
+      safetyZone = `Üst dinamik hamle bölgesindeki düşüş faktöründe ana ip gerilimi yüksektir. Uzun ekspres kullanımı önerilir.`;
+      clipComfort = 'Kilit etaplardaki boltlar kolların aşırı şişeceği (pump) negatif bölgelerde kalmaktadır.';
+    }
+
+    // Grafik Koordinat Şablonu
+    const route1 = [{ x: 50, y: 88 }, { x: 48, y: 70 }, { x: 54, y: 52 }, { x: 47, y: 34 }, { x: 52, y: 12 }];
+    const route2 = [{ x: 50, y: 88 }, { x: 32, y: 72 }, { x: 38, y: 48 }, { x: 44, y: 30 }, { x: 52, y: 12 }];
+
+    // Boltların ve kilitlerin yerden yüksekliklerini oran katsayısına göre dinamik hesaplama: (90 - y) * scaleFactor
     const bolts = [
-      { x: 49, y: 80, h: 3.1 },
-      { x: 47, y: 64, h: 6.5 },
-      { x: 53, y: 46, h: 11.2 },
-      { x: 46, y: 28, h: 16.8 },
-      { x: 51, y: 18, h: 21.5 }
+      { x: 49, y: 80, h: parseFloat(((90 - 80) * scaleFactor).toFixed(1)) },
+      { x: 47, y: 64, h: parseFloat(((90 - 64) * scaleFactor).toFixed(1)) },
+      { x: 53, y: 46, h: parseFloat(((90 - 46) * scaleFactor).toFixed(1)) },
+      { x: 46, y: 28, h: parseFloat(((90 - 28) * scaleFactor).toFixed(1)) },
+      { x: 51, y: 18, h: parseFloat(((90 - 18) * scaleFactor).toFixed(1)) }
     ];
 
-    // Kilit noktaları ve yerden yükseklikleri (h: metre cinsinden)
     const cruxs = [
-      { x: 54, y: 52, h: 9.8 },  // Kilit 1
-      { x: 47, y: 34, h: 15.1 }, // Kilit 2
-      { x: 48, y: 70, h: 4.8 }   // Kilit 3
+      { x: 54, y: 52, h: parseFloat(((90 - 52) * scaleFactor).toFixed(1)) },
+      { x: 47, y: 34, h: parseFloat(((90 - 34) * scaleFactor).toFixed(1)) },
+      { x: 48, y: 70, h: parseFloat(((90 - 70) * scaleFactor).toFixed(1)) }
     ];
+
+    // Öneri Entegrasyonu Hesapları
+    const requiredRope = `${targetTotalHeight * 2} Metre (İstasyon İniş Güvenliği Dahil)`;
+    const quickdrawCount = bolts.length + 2; // İstasyon yedekleri dahil emniyet kemerine takılacak sayı
+    const avgBoltDistance = `${(targetTotalHeight / bolts.length).toFixed(1)} Metre Arası`;
 
     return res.status(200).json({
       route1,
       route2,
       bolts,
       cruxs,
+      scaleTicks,
       details: {
         grade: grade,
         systemEquivalent: grade.startsWith('8') ? '7a / 5.11d' : grade.startsWith('7') ? '6b+ / 5.11a' : '5c / 5.9',
         rockType,
-        totalLength,
+        totalLength: `${targetTotalHeight} Metre`,
+        requiredRope,
+        quickdrawCount,
         avgBoltDistance,
         safetyZone,
         clipComfort,
